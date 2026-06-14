@@ -1,0 +1,60 @@
+team_name: "Solo"
+participant_name: "Srinivas"
+approach_summary: >
+  Multi-signal offline candidate ranking system combining sentence-transformer
+  semantic embeddings (all-MiniLM-L6-v2), keyword-depth skill scoring,
+  career-trajectory analysis, and behavioral signal modifiers.
+
+pipeline_steps:
+  - step: 1
+    name: "Offline Embedding Pre-computation"
+    description: >
+      Used sentence-transformers (all-MiniLM-L6-v2) to encode candidate
+      profile summaries/headlines and a structured JD query string.
+      Saved 100K embeddings (~60MB) as NumPy arrays for O(1) lookup at rank time.
+
+  - step: 2
+    name: "Honeypot Detection"
+    description: >
+      Applied 7 logical consistency rules to flag 114 honeypot candidates:
+      expert/advanced skills with 0 duration, YoE=0 with career history,
+      job duration > YoE, calendar date vs stated duration mismatch,
+      impossible startup pre-founding work, and total career duration > YoE+5 years.
+
+  - step: 3
+    name: "Multi-Signal Scoring"
+    description: >
+      Weighted composite: Semantic Similarity (35%), Skill Depth (35%), Career Fit (30%).
+      Applied multiplicative behavioral modifiers: recruiter response rate,
+      activity recency, open-to-work flag, notice period.
+
+  - step: 4
+    name: "Ranking & Output"
+    description: >
+      Sorted by composite score (descending), tie-break by candidate_id (ascending).
+      Auto-generated reasoning string from candidate facts. Output top 100 to CSV.
+
+models_used:
+  - name: "all-MiniLM-L6-v2"
+    source: "sentence-transformers (HuggingFace)"
+    usage: "Candidate and JD semantic embedding"
+    offline: true
+
+runtime_info:
+  precompute_time_seconds: ~180
+  rank_time_seconds: ~8
+  memory_gb: ~2.5
+  device: "CPU"
+  requires_gpu: false
+
+files_submitted:
+  - "submission.csv"
+  - "rank.py"
+  - "precompute.py"
+  - "generate_honeypots_list.py"
+  - "submission_metadata.yaml"
+  - "README.md"
+  - "cache/candidate_embeddings.npy"
+  - "cache/candidate_ids.json"
+  - "cache/jd_embedding.npy"
+  - "cache/honeypot_ids.json"

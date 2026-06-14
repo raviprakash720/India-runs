@@ -1,0 +1,32 @@
+# ─── Large cache / model files (too big for GitHub) ───────────────────────────
+cache/candidate_embeddings.npy
+cache/candidate_semantic_scores.npy
+
+# ─── Raw dataset (provided by challenge, not to be redistributed) ──────────────
+*India_runs_data_and_ai_challenge*/
+__MACOSX/
+
+# ─── Python artefacts ─────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.dist-info/
+.eggs/
+
+# ─── Virtual environments ─────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+.env/
+
+# ─── IDE / OS files ───────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Jupyter ──────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
