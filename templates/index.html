@@ -755,6 +755,12 @@ fileInput.addEventListener('change', () => { if (fileInput.files.length) handleF
 
 function handleFile(f) {
     dropLabel.textContent = `✓  ${f.name}`;
+    
+    // Create a DataTransfer object to programmatically set files on fileInput
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    fileInput.files = dt.files;
+    
     submitBtn.removeAttribute('disabled');
 }
 
