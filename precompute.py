@@ -152,9 +152,16 @@ def main():
     print(f"\n[2/3] Computing semantic scores...")
 
     if full_mode:
-        from sentence_transformers import SentenceTransformer
-        print("  Loading paraphrase-MiniLM-L3-v2 (3-layer, ~3x faster than L6)...")
-        model = SentenceTransformer("paraphrase-MiniLM-L3-v2")
+        try:
+            from domain_finetune import load_model
+            print("  Loading domain fine-tuned model or fallback base model...")
+            model = load_model()
+            if model is None:
+                raise ImportError()
+        except (ImportError, ModuleNotFoundError):
+            from sentence_transformers import SentenceTransformer
+            print("  Loading paraphrase-MiniLM-L3-v2 (3-layer, ~3x faster than L6)...")
+            model = SentenceTransformer("paraphrase-MiniLM-L3-v2")
 
         jd_query = (
             "Senior AI Engineer with experience in embeddings-based retrieval, "

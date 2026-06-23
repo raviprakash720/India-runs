@@ -204,7 +204,15 @@ def compute_skill_score(cand):
     core_coverage = min(matched_core / total_core, 1.0)
     bonus_term    = min(matched_bonus / max(len(BONUS_SKILLS), 1), 1.0) * 0.15
 
-    return min(core_coverage + bonus_term, 1.0)
+    # Skill co-occurrence bonus
+    co_bonus = 0.0
+    try:
+        from skill_cooccurrence import compute_cooccurrence_bonus
+        co_bonus = compute_cooccurrence_bonus(skills)
+    except (ImportError, ModuleNotFoundError):
+        pass
+
+    return min(core_coverage + bonus_term + 0.15 * co_bonus, 1.0)
 
 
 # ──────────────────────────────────────────────
@@ -333,6 +341,14 @@ def compute_behavioral_multiplier(cand):
         mult *= 0.80
     else:
         mult *= 0.55    # > 90 days — JD explicitly says "bar gets higher"
+
+    # Dynamic Activity Boost
+    try:
+        from dynamic_activity import compute_hot_candidate_boost
+        boost = compute_hot_candidate_boost(cand)
+        mult *= boost
+    except (ImportError, ModuleNotFoundError):
+        pass
 
     return min(max(mult, 0.05), 1.5)
 
@@ -546,9 +562,63 @@ def main():
     print(f"  Scored {len(scored)} non-honeypot candidates.")
     print(f"  Filtered out {honeypot_count} honeypot candidates.")
 
-    # ── 5. Sort and take top 100 ──
-    print("\n[5/6] Ranking top 100...")
+    # ── 5. Advanced Reranking & Ensemble ──
+    print("\n[5/6] Running Advanced Reranking & Ensemble...")
+    # Initial sort
     scored.sort(key=lambda x: (-x["final_score"], x["candidate_id"]))
+
+    # A. Cross-Encoder Reranking
+    try:
+        from cross_encoder_rerank import rerank_candidates
+        from precompute import build_candidate_text
+        jd_text = (
+            "Senior AI Engineer with experience in embeddings-based retrieval, "
+            "sentence-transformers, vector databases Pinecone Weaviate Qdrant FAISS, "
+            "hybrid search, Python, evaluation frameworks NDCG MRR MAP, LLM fine-tuning, "
+            "RAG, information retrieval, ranking systems at product companies."
+        )
+        print("  Generating candidate texts for top 5,000 candidates...")
+        # Only build texts for candidates in the top 5000 to keep it extremely fast
+        top_5k_ids = {item["candidate_id"] for item in scored[:5000]}
+        candidate_texts = {
+            item["candidate_id"]: build_candidate_text(item["cand"])
+            for item in scored
+            if item["candidate_id"] in top_5k_ids
+        }
+        print("  Applying Cross-Encoder reranking...")
+        scored = rerank_candidates(scored, candidate_texts, jd_text, top_k=5000)
+
+        # Recompute final_score for top 5k using refined semantic scores
+        for item in scored[:5000]:
+            composite = (
+                W_SEMANTIC * item["semantic_score"] +
+                W_SKILL    * item["skill_score"] +
+                W_CAREER   * item["career_score"]
+            )
+            item["final_score"] = min(composite * item["multiplier"], 1.0)
+        
+        # Re-sort after semantic updates
+        scored.sort(key=lambda x: (-x["final_score"], x["candidate_id"]))
+    except Exception as e:
+        print(f"  Warning: Cross-Encoder reranking skipped or failed: {e}")
+
+    # B. LightGBM Ensemble Correction
+    try:
+        from lgbm_ensemble import train_and_predict
+        print("  Training LightGBM ensemble regressor...")
+        refined_scores = train_and_predict(scored)
+        if refined_scores is not None:
+            print("  Applying LightGBM non-linear correction to candidate scores...")
+            for item in scored:
+                cid = item["candidate_id"]
+                if cid in refined_scores:
+                    item["final_score"] = refined_scores[cid]
+            scored.sort(key=lambda x: (-x["final_score"], x["candidate_id"]))
+        else:
+            print("  LightGBM ensemble unavailable; using linear composite scores.")
+    except Exception as e:
+        print(f"  Warning: LightGBM ensemble skipped or failed: {e}")
+
     top100 = scored[:100]
 
     # Assign ranks and generate reasoning
@@ -575,6 +645,41 @@ def main():
         writer = csv.DictWriter(f, fieldnames=["candidate_id", "rank", "score", "reasoning"])
         writer.writeheader()
         writer.writerows(rows)
+
+    # ── 7. Write formatted submission XLSX ──
+    try:
+        from export_xlsx import export_to_xlsx
+        xlsx_path = OUTPUT_CSV.replace(".csv", ".xlsx")
+        print(f"  Writing formatted spreadsheet to {xlsx_path}...")
+        xlsx_rows = []
+        for rank, item in enumerate(top100, start=1):
+            cand = item["cand"]
+            reasoning = generate_reasoning(
+                cand,
+                item["final_score"],
+                item["semantic_score"],
+                item["skill_score"],
+                item["career_score"],
+            )
+            xlsx_rows.append({
+                "candidate_id": item["candidate_id"],
+                "rank":         rank,
+                "score":        round(item["final_score"], 6),
+                "semantic_score": round(item["semantic_score"], 6),
+                "skill_score":    round(item["skill_score"], 6),
+                "career_score":   round(item["career_score"], 6),
+                "multiplier":     round(item["multiplier"], 6),
+                "reasoning":    reasoning,
+            })
+        metadata = {
+            "team_name": "India-runs",
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "total_candidates": len(candidates)
+        }
+        export_to_xlsx(xlsx_rows, xlsx_path, metadata=metadata)
+        print(f"  XLSX Export successful: {xlsx_path}")
+    except Exception as e:
+        print(f"  Warning: XLSX export skipped or failed: {e}")
 
     elapsed = time.time() - start_time
     print(f"\n{'=' * 60}")
