@@ -518,11 +518,36 @@ def main(candidates_path=None, output_csv_path=None, output_xlsx_path=None, prog
     report("\n[3/6] Loading candidate profiles...")
     candidates = []
     with open(current_candidates_file, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            candidates.append(json.loads(line))
+        content = f.read().strip()
+        if content.startswith("[") or content.startswith("{"):
+            try:
+                parsed = json.loads(content)
+                if isinstance(parsed, list):
+                    candidates = parsed
+                else:
+                    candidates = [parsed]
+            except Exception as json_err:
+                # If reading the whole file as standard JSON fails, fallback to line-by-line reading
+                f.seek(0)
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        candidates.append(json.loads(line))
+                    except Exception:
+                        pass
+        else:
+            # Try parsing line by line
+            f.seek(0)
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    candidates.append(json.loads(line))
+                except Exception:
+                    pass
     report(f"  Loaded {len(candidates)} candidate profiles.")
 
     # ── 4. Score all candidates ──
