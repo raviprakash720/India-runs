@@ -4,452 +4,1012 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redrob Intelligent Ranker | Dashboard</title>
-    <!-- Outfit Font -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0A0F1D;
-            --bg-secondary: #141C31;
-            --accent-blue: #2A66FF;
-            --accent-green: #00E676;
-            --text-main: #FFFFFF;
-            --text-muted: #8F9CAE;
-            --border-color: #202D4A;
+            --bg-primary:    #070D1A;
+            --bg-secondary:  #0F1829;
+            --bg-card:       #131F35;
+            --accent-blue:   #3B82F6;
+            --accent-cyan:   #06B6D4;
+            --accent-green:  #10B981;
+            --accent-gold:   #F59E0B;
+            --accent-violet: #8B5CF6;
+            --text-main:     #F1F5F9;
+            --text-muted:    #64748B;
+            --text-dim:      #94A3B8;
+            --border:        #1E2D45;
+            --border-bright: #2A3F5E;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: var(--bg-primary);
+            background: var(--bg-primary);
             color: var(--text-main);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
         }
 
+        /* ─── Header ─── */
         header {
-            border-bottom: 1px solid var(--border-color);
-            padding: 20px 40px;
+            background: rgba(13,24,45,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px;
+            height: 64px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            background-color: rgba(20, 28, 49, 0.5);
-            backdrop-filter: blur(10px);
+            justify-content: space-between;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 100;
         }
-
-        .logo-container {
+        .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-
-        .logo-dot {
-            width: 14px;
-            height: 14px;
-            background-color: var(--accent-blue);
-            border-radius: 50%;
-            box-shadow: 0 0 15px var(--accent-blue);
-        }
-
-        .logo-text {
-            font-size: 20px;
+            gap: 10px;
+            font-size: 18px;
             font-weight: 700;
-            letter-spacing: 0.5px;
+            letter-spacing: .5px;
         }
-
-        .logo-text span {
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .logo span { color: var(--accent-blue); }
+        .header-tag {
+            background: rgba(59,130,246,.15);
             color: var(--accent-blue);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(59,130,246,.25);
         }
 
-        .container {
-            max-width: 900px;
-            margin: 60px auto;
-            width: 100%;
-            padding: 0 20px;
-            flex-grow: 1;
-        }
+        /* ─── Layout ─── */
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
 
-        .hero-section {
+        /* ─── Hero ─── */
+        .hero {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 48px;
         }
-
-        .hero-section h1 {
-            font-size: 38px;
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(59,130,246,.1);
+            border: 1px solid rgba(59,130,246,.2);
+            color: var(--accent-blue);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .hero h1 {
+            font-size: 48px;
             font-weight: 700;
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, #FFF, #8F9CAE);
+            background: linear-gradient(135deg, #fff 30%, #64748B);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            margin-bottom: 14px;
+            line-height: 1.1;
         }
-
-        .hero-section p {
+        .hero p {
             color: var(--text-muted);
             font-size: 16px;
-            max-width: 550px;
+            max-width: 560px;
             margin: 0 auto;
-            line-height: 1.5;
+            line-height: 1.65;
         }
 
+        /* ─── Upload Card ─── */
         .upload-card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            transition: border-color 0.3s ease;
+            padding: 36px;
+            box-shadow: 0 24px 48px rgba(0,0,0,.5);
+            max-width: 640px;
+            margin: 0 auto 48px;
+            transition: border-color .3s;
         }
-
-        .upload-card.dragover {
-            border-color: var(--accent-blue);
-        }
-
+        .upload-card.drag-over { border-color: var(--accent-blue); }
         .drop-zone {
-            border: 2px dashed var(--border-color);
-            border-radius: 12px;
-            padding: 40px 20px;
+            border: 2px dashed var(--border-bright);
+            border-radius: 14px;
+            padding: 36px 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            background-color: rgba(10, 15, 29, 0.3);
+            transition: all .3s;
+            background: rgba(7,13,26,.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
+        .drop-zone:hover { border-color: var(--accent-blue); background: rgba(59,130,246,.04); }
+        .drop-zone .icon { font-size: 40px; }
+        .drop-zone .label { font-size: 15px; color: var(--text-dim); }
+        .drop-zone .sub { font-size: 12px; color: var(--text-muted); }
+        input[type=file] { display: none; }
 
-        .drop-zone:hover {
-            border-color: var(--accent-blue);
-            background-color: rgba(42, 102, 255, 0.05);
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            display: inline-block;
-        }
-
-        .drop-zone-text {
-            font-size: 16px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .drop-zone-subtext {
-            font-size: 12px;
-            color: #58667E;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .btn {
-            background-color: var(--accent-blue);
-            color: var(--text-main);
-            padding: 14px 28px;
+        /* ─── Buttons ─── */
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-violet));
+            color: #fff;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(42, 102, 255, 0.3);
             margin-top: 20px;
+            transition: all .3s;
+            box-shadow: 0 4px 20px rgba(59,130,246,.3);
         }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(59,130,246,.5); }
+        .btn-primary:disabled { background: var(--border); color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(42, 102, 255, 0.5);
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-bright);
+            color: var(--text-dim);
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
+        .btn-outline:hover { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59,130,246,.05); }
+        .btn-green { border-color: var(--accent-green); color: var(--accent-green); }
+        .btn-green:hover { background: rgba(16,185,129,.05); border-color: var(--accent-green); }
 
-        .btn:disabled {
-            background-color: #202D4A;
-            color: var(--text-muted);
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-
-        /* Progress Card */
+        /* ─── Progress Card ─── */
         .progress-card {
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 40px;
-            margin-top: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 32px;
+            max-width: 640px;
+            margin: 0 auto 48px;
             display: none;
         }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .progress-title { font-size: 16px; font-weight: 600; }
+        .status-pill {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+        .status-pill.processing { background: rgba(59,130,246,.15); color: var(--accent-blue); }
+        .status-pill.completed  { background: rgba(16,185,129,.15); color: var(--accent-green); }
+        .status-pill.failed     { background: rgba(239,68,68,.15);  color: #EF4444; }
+        .status-pill.queued     { background: rgba(245,158,11,.15); color: var(--accent-gold); }
 
-        .progress-header {
+        .progress-bar-wrap { height: 5px; background: var(--border); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green)); border-radius: 10px; transition: width .5s; }
+
+        .console {
+            background: #030709;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            font-family: 'Consolas', monospace;
+            font-size: 12.5px;
+            color: #22D3EE;
+            max-height: 240px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.65;
+        }
+        .dl-row { display: flex; gap: 12px; margin-top: 24px; }
+
+        /* ─── Results Section ─── */
+        #results-section { display: none; margin-top: 8px; }
+        .results-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
-
-        .progress-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .status-badge {
-            background-color: rgba(42, 102, 255, 0.15);
-            color: var(--accent-blue);
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-badge.completed {
-            background-color: rgba(0, 230, 118, 0.15);
-            color: var(--accent-green);
-        }
-
-        .status-badge.failed {
-            background-color: rgba(244, 67, 54, 0.15);
-            color: #F44336;
-        }
-
-        .progress-bar-container {
-            width: 100%;
-            height: 6px;
-            background-color: var(--border-color);
-            border-radius: 10px;
-            margin-bottom: 24px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
-            border-radius: 10px;
-            transition: width 0.4s ease;
-        }
-
-        .console-log {
-            background-color: #0A0F1D;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 20px;
-            font-family: 'Consolas', monospace;
+        .results-title { font-size: 22px; font-weight: 700; }
+        .results-count {
+            color: var(--text-muted);
             font-size: 13px;
-            color: #00E676;
-            max-height: 250px;
-            overflow-y: auto;
-            text-align: left;
-            white-space: pre-wrap;
-            line-height: 1.6;
         }
+        .results-count span { color: var(--accent-blue); font-weight: 600; }
 
-        .download-actions {
+        /* ─── Filter Bar ─── */
+        .filter-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
             display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin-top: 30px;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
         }
+        .search-input {
+            flex: 1;
+            min-width: 220px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-bright);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+            padding: 10px 14px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .search-input::placeholder { color: var(--text-muted); }
+        .search-input:focus { border-color: var(--accent-blue); }
 
-        .btn-download {
+        .toggle-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-bright);
+            color: var(--text-dim);
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+        .toggle-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+        .toggle-btn.active { background: rgba(59,130,246,.12); border-color: var(--accent-blue); color: var(--accent-blue); font-weight: 600; }
+        .toggle-btn.active-green { background: rgba(16,185,129,.12); border-color: var(--accent-green); color: var(--accent-green); font-weight: 600; }
+
+        .exp-filter {
             display: flex;
             align-items: center;
             gap: 8px;
-            background-color: transparent;
-            border: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+        .exp-filter select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-bright);
             color: var(--text-main);
-            box-shadow: none;
+            font-size: 13px;
+            font-family: 'Outfit', sans-serif;
+            border-radius: 8px;
+            padding: 8px 10px;
+            outline: none;
+            cursor: pointer;
         }
 
-        .btn-download:hover {
-            border-color: var(--accent-blue);
-            background-color: rgba(42, 102, 255, 0.05);
+        /* ─── Table ─── */
+        .table-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: linear-gradient(135deg, #0E1A30, #131F38); }
+        th {
+            padding: 14px 16px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+            color: var(--text-muted);
+            text-align: left;
+        }
+        tbody tr {
+            border-top: 1px solid var(--border);
+            cursor: pointer;
+            transition: background .15s;
+        }
+        tbody tr:hover { background: rgba(59,130,246,.04); }
+        td { padding: 14px 16px; font-size: 13.5px; vertical-align: middle; }
+        .rank-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 12px;
+        }
+        .rank-gold   { background: rgba(245,158,11,.2);  color: #F59E0B; }
+        .rank-silver { background: rgba(148,163,184,.15); color: #94A3B8; }
+        .rank-bronze { background: rgba(180,120,80,.15);  color: #CD7C3A; }
+        .rank-normal { background: rgba(30,45,69,.5);     color: var(--text-muted); }
+
+        .score-bar-container { display: flex; align-items: center; gap: 8px; }
+        .score-mini-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .score-mini-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+        }
+        .score-val { font-size: 13px; font-weight: 600; color: var(--text-main); min-width: 42px; }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .pill-green { background: rgba(16,185,129,.12); color: var(--accent-green); border: 1px solid rgba(16,185,129,.2); }
+        .pill-blue  { background: rgba(59,130,246,.12);  color: var(--accent-blue);  border: 1px solid rgba(59,130,246,.2); }
+        .pill-muted { background: rgba(100,116,139,.1);  color: var(--text-muted);   border: 1px solid var(--border); }
+
+        .skill-tag {
+            display: inline-block;
+            background: rgba(30,45,69,.6);
+            border: 1px solid var(--border-bright);
+            color: var(--text-dim);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            margin: 1px 2px;
         }
 
-        .btn-download.xlsx-btn {
-            border-color: var(--accent-green);
+        /* ─── No Results ─── */
+        .no-results {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+            display: none;
+        }
+        .no-results .icon { font-size: 36px; margin-bottom: 12px; }
+
+        /* ─── Modal Overlay ─── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.75);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-bright);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 820px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 40px 80px rgba(0,0,0,.8);
+            animation: slideUp .25s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 28px 28px 20px;
+            border-bottom: 1px solid var(--border);
+            gap: 16px;
+        }
+        .modal-cid { font-size: 12px; color: var(--accent-blue); font-weight: 600; margin-bottom: 4px; }
+        .modal-name { font-size: 22px; font-weight: 700; }
+        .modal-title { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+        .modal-close {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all .2s;
+        }
+        .modal-close:hover { background: rgba(239,68,68,.1); border-color: #EF4444; color: #EF4444; }
+
+        .modal-body { padding: 24px 28px 28px; }
+
+        /* score cards row */
+        .score-cards { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; margin-bottom: 24px; }
+        @media (min-width: 600px) { .score-cards { grid-template-columns: repeat(4,1fr); } }
+        .score-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+        }
+        .score-card-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: 8px; }
+        .score-card-value { font-size: 26px; font-weight: 700; }
+        .score-card-bar { height: 4px; border-radius: 4px; margin-top: 10px; }
+
+        /* breakdown bars */
+        .breakdown-section { margin-bottom: 24px; }
+        .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted); margin-bottom: 14px; }
+        .bar-row { margin-bottom: 12px; }
+        .bar-meta { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px; }
+        .bar-label { color: var(--text-dim); font-weight: 500; }
+        .bar-pct { font-weight: 700; }
+        .bar-track { height: 8px; background: var(--border); border-radius: 6px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 6px; transition: width 1s cubic-bezier(.22,1,.36,1); }
+
+        /* synergy */
+        .synergy-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .synergy-pill {
+            background: rgba(139,92,246,.1);
+            border: 1px solid rgba(139,92,246,.25);
+            color: #A78BFA;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .synergy-plus { color: rgba(139,92,246,.5); font-size: 14px; }
+        .synergy-weight { font-size: 10px; color: rgba(139,92,246,.6); margin-left: 2px; }
+        .synergy-empty { color: var(--text-muted); font-size: 13px; }
+
+        /* skills */
+        .skills-list { display: flex; flex-wrap: wrap; gap: 6px; }
+        .skill-chip {
+            background: rgba(30,45,69,.7);
+            border: 1px solid var(--border-bright);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .prof-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .prof-expert { background: var(--accent-green); }
+        .prof-advanced { background: var(--accent-blue); }
+        .prof-intermediate { background: var(--accent-gold); }
+        .prof-beginner { background: var(--text-muted); }
+
+        /* reasoning */
+        .reasoning-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 13.5px;
+            color: var(--text-dim);
+            line-height: 1.7;
         }
 
-        .btn-download.xlsx-btn:hover {
-            background-color: rgba(0, 230, 118, 0.05);
-        }
+        /* divider */
+        .divider { height: 1px; background: var(--border); margin: 22px 0; }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo-container">
-            <div class="logo-dot"></div>
-            <div class="logo-text">REDROB <span>RANKER</span></div>
+
+<!-- ── Header ── -->
+<header>
+    <div class="logo">
+        <div class="logo-icon">🔬</div>
+        REDROB <span>RANKER</span>
+    </div>
+    <div class="header-tag">AI-Powered Evaluation</div>
+</header>
+
+<!-- ── Main ── -->
+<div class="container">
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-badge">✦ Multi-Stage Ranking Pipeline</div>
+        <h1>Candidate Evaluation<br>Hub</h1>
+        <p>Upload your candidates file to run Cross-Encoder semantic reranking, Skill Co-Occurrence scoring, and LightGBM ensemble correction. Get ranked results instantly.</p>
+    </div>
+
+    <!-- Upload Card -->
+    <div class="upload-card" id="upload-card">
+        <div class="drop-zone" id="drop-zone">
+            <span class="icon">📁</span>
+            <div class="label" id="drop-label">Drag &amp; drop candidates.jsonl here, or click to browse</div>
+            <div class="sub">Supported format: .jsonl, .txt</div>
         </div>
-    </header>
+        <input type="file" id="file-input" accept=".jsonl,.txt">
+        <button class="btn-primary" id="submit-btn" disabled>⚡ Start Ranking Pipeline</button>
+    </div>
 
-    <div class="container">
-        <div class="hero-section">
-            <h1>Candidate Evaluation Hub</h1>
-            <p>Upload your candidates.jsonl file to run Cross-Encoder semantic reranking, Skill Co-Occurrence scoring, and LightGBM ensemble pipeline instantly.</p>
+    <!-- Progress Card -->
+    <div class="progress-card" id="progress-card">
+        <div class="progress-header">
+            <div class="progress-title">Pipeline Status</div>
+            <div class="status-pill processing" id="status-pill">Queued</div>
         </div>
-
-        <div class="upload-card" id="upload-card">
-            <div class="drop-zone" id="drop-zone">
-                <span class="upload-icon">📁</span>
-                <div class="drop-zone-text">Drag and drop candidates file here or click to browse</div>
-                <div class="drop-zone-subtext">Accepted formats: JSONL (.jsonl, .txt)</div>
-                <input type="file" id="file-input" class="file-input" accept=".jsonl,.txt">
-            </div>
-            <button class="btn" id="submit-btn" disabled>Rank Candidates</button>
+        <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progress-bar"></div>
         </div>
-
-        <div class="progress-card" id="progress-card">
-            <div class="progress-header">
-                <div class="progress-title">Pipeline Status</div>
-                <div class="status-badge" id="status-badge">Processing</div>
-            </div>
-            <div class="progress-bar-container">
-                <div class="progress-bar" id="progress-bar"></div>
-            </div>
-            <div class="console-log" id="console-log">Initializing evaluation...</div>
-
-            <div class="download-actions" id="download-actions" style="display: none;">
-                <a href="#" id="dl-csv" class="btn btn-download">📊 Download CSV</a>
-                <a href="#" id="dl-xlsx" class="btn btn-download xlsx-btn">📈 Download Formatted Excel (XLSX)</a>
-            </div>
+        <div class="console" id="console">Initializing...</div>
+        <div class="dl-row" id="dl-row" style="display:none">
+            <a href="#" id="dl-csv"  class="btn-outline">📊 Download CSV</a>
+            <a href="#" id="dl-xlsx" class="btn-outline btn-green">📈 Download XLSX</a>
         </div>
     </div>
 
-    <script>
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-        const submitBtn = document.getElementById('submit-btn');
-        const uploadCard = document.getElementById('upload-card');
-        const progressCard = document.getElementById('progress-card');
-        const statusBadge = document.getElementById('status-badge');
-        const progressBar = document.getElementById('progress-bar');
-        const consoleLog = document.getElementById('console-log');
-        const downloadActions = document.getElementById('download-actions');
-        const dlCsv = document.getElementById('dl-csv');
-        const dlXlsx = document.getElementById('dl-xlsx');
+    <!-- Results Section -->
+    <div id="results-section">
+        <div class="results-header">
+            <div>
+                <div class="results-title">Top Candidates</div>
+                <div class="results-count">Showing <span id="visible-count">–</span> of <span id="total-count">–</span> candidates</div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <a href="#" id="hdr-csv"  class="btn-outline">📊 CSV</a>
+                <a href="#" id="hdr-xlsx" class="btn-outline btn-green">📈 XLSX</a>
+            </div>
+        </div>
 
-        let selectedFile = null;
-        let pollInterval = null;
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text" class="search-input" id="search-input" placeholder="🔍  Search by name, role, company, or skill…">
+            <button class="toggle-btn" id="filter-otw" data-active="false">🟢 Open to Work</button>
+            <button class="toggle-btn" id="filter-imm" data-active="false">⚡ Immediate Joiners</button>
+            <div class="exp-filter">
+                <span>Exp:</span>
+                <select id="exp-select">
+                    <option value="any">Any</option>
+                    <option value="0-3">0–3 yrs</option>
+                    <option value="3-6">3–6 yrs</option>
+                    <option value="6-10">6–10 yrs</option>
+                    <option value="10+">10+ yrs</option>
+                </select>
+            </div>
+            <button class="btn-outline" id="clear-filters-btn" style="margin-left:auto">✕ Clear</button>
+        </div>
 
-        // Drag & Drop
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadCard.classList.add('dragover');
-        });
+        <!-- Table -->
+        <div class="table-wrap">
+            <table id="candidates-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Candidate</th>
+                        <th>Role / Company</th>
+                        <th>Score</th>
+                        <th>Skills</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+        <div class="no-results" id="no-results">
+            <div class="icon">🔎</div>
+            No candidates match your filters. Try adjusting your search.
+        </div>
+    </div>
 
-        dropZone.addEventListener('dragleave', () => {
-            uploadCard.classList.remove('dragover');
-        });
+</div><!-- /container -->
 
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadCard.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) {
-                handleFile(e.dataTransfer.files[0]);
+<!-- ── Modal ── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+<div class="modal" id="modal">
+    <div class="modal-header">
+        <div>
+            <div class="modal-cid" id="m-cid">CAND_0000000</div>
+            <div class="modal-name" id="m-name">Candidate Name</div>
+            <div class="modal-title" id="m-title"></div>
+        </div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+        <!-- Score Cards -->
+        <div class="score-cards">
+            <div class="score-card">
+                <div class="score-card-label">Overall</div>
+                <div class="score-card-value" id="m-overall" style="color:#3B82F6">–</div>
+                <div class="score-card-bar" style="background:linear-gradient(90deg,#3B82F6,#8B5CF6)" id="m-overall-bar"></div>
+            </div>
+            <div class="score-card">
+                <div class="score-card-label">Semantic</div>
+                <div class="score-card-value" id="m-semantic" style="color:#06B6D4">–</div>
+                <div class="score-card-bar" style="background:linear-gradient(90deg,#06B6D4,#3B82F6)" id="m-semantic-bar"></div>
+            </div>
+            <div class="score-card">
+                <div class="score-card-label">Skill</div>
+                <div class="score-card-value" id="m-skill" style="color:#10B981">–</div>
+                <div class="score-card-bar" style="background:linear-gradient(90deg,#10B981,#06B6D4)" id="m-skill-bar"></div>
+            </div>
+            <div class="score-card">
+                <div class="score-card-label">Career</div>
+                <div class="score-card-value" id="m-career" style="color:#F59E0B">–</div>
+                <div class="score-card-bar" style="background:linear-gradient(90deg,#F59E0B,#EF4444)" id="m-career-bar"></div>
+            </div>
+        </div>
+
+        <!-- Breakdown Bars -->
+        <div class="breakdown-section">
+            <div class="section-title">Match Breakdown</div>
+            <div class="bar-row">
+                <div class="bar-meta">
+                    <span class="bar-label">🧠 Semantic Fit</span>
+                    <span class="bar-pct" id="b-semantic" style="color:#06B6D4">–</span>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bf-semantic" style="background:linear-gradient(90deg,#06B6D4,#3B82F6)"></div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-meta">
+                    <span class="bar-label">🛠 Skill Alignment</span>
+                    <span class="bar-pct" id="b-skill" style="color:#10B981">–</span>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bf-skill" style="background:linear-gradient(90deg,#10B981,#06B6D4)"></div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-meta">
+                    <span class="bar-label">💼 Career History</span>
+                    <span class="bar-pct" id="b-career" style="color:#F59E0B">–</span>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bf-career" style="background:linear-gradient(90deg,#F59E0B,#EF4444)"></div>
+                </div>
+            </div>
+            <div class="bar-row">
+                <div class="bar-meta">
+                    <span class="bar-label">⚡ Behavioral Multiplier</span>
+                    <span class="bar-pct" id="b-mult" style="color:#8B5CF6">–</span>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" id="bf-mult" style="background:linear-gradient(90deg,#8B5CF6,#3B82F6)"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Synergy Pairs -->
+        <div class="breakdown-section">
+            <div class="section-title">⚡ Skill Synergy Pairs Detected</div>
+            <div class="synergy-grid" id="m-synergy">
+                <span class="synergy-empty">No synergy pairs detected.</span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Skills -->
+        <div class="breakdown-section">
+            <div class="section-title">🛠 Skills Profile</div>
+            <div class="skills-list" id="m-skills"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Reasoning -->
+        <div class="breakdown-section">
+            <div class="section-title">💬 AI Reasoning</div>
+            <div class="reasoning-box" id="m-reasoning">–</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+/* ── State ── */
+let allCandidates = [];
+let filteredCandidates = [];
+let currentTaskId = null;
+let pollTimer = null;
+
+/* ── Upload Logic ── */
+const dropZone   = document.getElementById('drop-zone');
+const fileInput  = document.getElementById('file-input');
+const submitBtn  = document.getElementById('submit-btn');
+const dropLabel  = document.getElementById('drop-label');
+const uploadCard = document.getElementById('upload-card');
+const progressCard = document.getElementById('progress-card');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); uploadCard.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => uploadCard.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadCard.classList.remove('drag-over');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+
+function handleFile(f) {
+    dropLabel.textContent = `✓  ${f.name}`;
+    submitBtn.removeAttribute('disabled');
+}
+
+submitBtn.addEventListener('click', () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('file', file);
+    submitBtn.disabled = true;
+    progressCard.style.display = 'block';
+    progressCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setStatus('queued', 5, 'Uploading file...');
+
+    fetch('/upload', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(d => {
+            if (d.error) { setStatus('failed', 0, `Upload error: ${d.error}`); return; }
+            currentTaskId = d.task_id;
+            pollStatus();
+        })
+        .catch(e => setStatus('failed', 0, `Upload failed: ${e}`));
+});
+
+function pollStatus() {
+    pollTimer = setInterval(() => {
+        fetch(`/status/${currentTaskId}`)
+        .then(r => r.json())
+        .then(d => {
+            const log = d.logs.join('\n');
+            document.getElementById('console').textContent = log;
+            document.getElementById('console').scrollTop = 9999;
+
+            let pct = 5;
+            if (log.includes('[1/6]')) pct = 18;
+            if (log.includes('[2/6]')) pct = 32;
+            if (log.includes('[3/6]')) pct = 48;
+            if (log.includes('[4/6]')) pct = 62;
+            if (log.includes('[5/6]')) pct = 80;
+            if (log.includes('[6/6]')) pct = 94;
+
+            const pill = document.getElementById('status-pill');
+            pill.className = `status-pill ${d.status}`;
+            pill.textContent = capitalize(d.status);
+            document.getElementById('progress-bar').style.width = pct + '%';
+
+            if (d.status === 'completed') {
+                clearInterval(pollTimer);
+                document.getElementById('progress-bar').style.width = '100%';
+                document.getElementById('dl-row').style.display = 'flex';
+                document.getElementById('dl-csv').href  = `/download/${d.csv_filename}`;
+                document.getElementById('dl-xlsx').href = `/download/${d.xlsx_filename}`;
+                document.getElementById('hdr-csv').href  = `/download/${d.csv_filename}`;
+                document.getElementById('hdr-xlsx').href = `/download/${d.xlsx_filename}`;
+                loadResults();
+            } else if (d.status === 'failed') {
+                clearInterval(pollTimer);
             }
         });
+    }, 2000);
+}
 
-        dropZone.addEventListener('click', () => {
-            fileInput.click();
-        });
+function setStatus(status, pct, msg) {
+    const pill = document.getElementById('status-pill');
+    pill.className = `status-pill ${status}`;
+    pill.textContent = capitalize(status);
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('console').textContent = msg;
+}
 
-        fileInput.addEventListener('change', () => {
-            if (fileInput.files.length > 0) {
-                handleFile(fileInput.files[0]);
-            }
-        });
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
-        function handleFile(file) {
-            selectedFile = file;
-            dropZone.querySelector('.drop-zone-text').innerText = `Selected: ${file.name}`;
-            submitBtn.removeAttribute('disabled');
+/* ── Load & Render Results ── */
+function loadResults() {
+    fetch(`/results/${currentTaskId}`)
+    .then(r => r.json())
+    .then(data => {
+        allCandidates = data;
+        document.getElementById('results-section').style.display = 'block';
+        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+        applyFilters();
+    });
+}
+
+function renderTable(list) {
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = '';
+    document.getElementById('visible-count').textContent = list.length;
+    document.getElementById('total-count').textContent = allCandidates.length;
+    document.getElementById('no-results').style.display = list.length ? 'none' : 'block';
+
+    list.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.setAttribute('data-id', c.candidate_id);
+        tr.addEventListener('click', () => openModal(c));
+
+        const rankClass = c.rank <= 1 ? 'rank-gold' : c.rank <= 3 ? 'rank-silver' : c.rank <= 10 ? 'rank-bronze' : 'rank-normal';
+        const topSkills = (c.skills || []).slice(0, 3).map(s => `<span class="skill-tag">${esc(s.name)}</span>`).join('');
+        const statusPills = [
+            c.open_to_work ? `<span class="pill pill-green">🟢 OTW</span>` : '',
+            (c.notice_period_days || 0) === 0 ? `<span class="pill pill-blue">⚡ Imm.</span>` : ''
+        ].filter(Boolean).join(' ');
+
+        tr.innerHTML = `
+            <td><div class="rank-badge ${rankClass}">${c.rank}</div></td>
+            <td>
+                <div style="font-weight:600">${esc(c.name || c.candidate_id)}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${esc(c.candidate_id)}</div>
+            </td>
+            <td>
+                <div style="font-size:13px">${esc(c.current_title || '—')}</div>
+                <div style="font-size:11px;color:var(--text-muted)">${esc(c.last_company || '')} ${c.years_of_experience ? `· ${c.years_of_experience}y exp` : ''}</div>
+            </td>
+            <td>
+                <div class="score-bar-container">
+                    <div class="score-mini-bar"><div class="score-mini-fill" style="width:${(c.score*100).toFixed(1)}%"></div></div>
+                    <div class="score-val">${(c.score*100).toFixed(1)}%</div>
+                </div>
+            </td>
+            <td>${topSkills || '<span style="color:var(--text-muted);font-size:12px">—</span>'}</td>
+            <td>${statusPills || '<span class="pill pill-muted">—</span>'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+/* ── Filters ── */
+let filterOTW = false, filterImm = false, expRange = 'any';
+
+document.getElementById('filter-otw').addEventListener('click', function() {
+    filterOTW = !filterOTW;
+    this.dataset.active = filterOTW;
+    this.className = 'toggle-btn' + (filterOTW ? ' active' : '');
+    applyFilters();
+});
+document.getElementById('filter-imm').addEventListener('click', function() {
+    filterImm = !filterImm;
+    this.dataset.active = filterImm;
+    this.className = 'toggle-btn' + (filterImm ? ' active' : '');
+    applyFilters();
+});
+document.getElementById('exp-select').addEventListener('change', function() {
+    expRange = this.value;
+    applyFilters();
+});
+document.getElementById('search-input').addEventListener('input', applyFilters);
+document.getElementById('clear-filters-btn').addEventListener('click', () => {
+    document.getElementById('search-input').value = '';
+    document.getElementById('filter-otw').className = 'toggle-btn';
+    document.getElementById('filter-imm').className = 'toggle-btn';
+    document.getElementById('exp-select').value = 'any';
+    filterOTW = false; filterImm = false; expRange = 'any';
+    applyFilters();
+});
+
+function applyFilters() {
+    const q = document.getElementById('search-input').value.toLowerCase().trim();
+    filteredCandidates = allCandidates.filter(c => {
+        if (filterOTW && !c.open_to_work) return false;
+        if (filterImm && (c.notice_period_days || 0) > 30) return false;
+        const exp = c.years_of_experience || 0;
+        if (expRange === '0-3' && !(exp >= 0 && exp < 3)) return false;
+        if (expRange === '3-6' && !(exp >= 3 && exp < 6)) return false;
+        if (expRange === '6-10' && !(exp >= 6 && exp < 10)) return false;
+        if (expRange === '10+' && !(exp >= 10)) return false;
+        if (q) {
+            const haystack = [
+                c.name, c.candidate_id, c.current_title, c.last_company,
+                ...(c.skills||[]).map(s => s.name)
+            ].join(' ').toLowerCase();
+            if (!haystack.includes(q)) return false;
         }
+        return true;
+    });
+    renderTable(filteredCandidates);
+}
 
-        submitBtn.addEventListener('click', () => {
-            if (!selectedFile) return;
+/* ── Modal ── */
+function openModal(c) {
+    document.getElementById('m-cid').textContent  = c.candidate_id;
+    document.getElementById('m-name').textContent = c.name || c.candidate_id;
+    document.getElementById('m-title').textContent = [c.current_title, c.last_company, c.years_of_experience ? `${c.years_of_experience} yrs exp` : ''].filter(Boolean).join(' · ');
 
-            const formData = new FormData();
-            formData.append('file', selectedFile);
+    const pct = v => (v * 100).toFixed(1) + '%';
+    document.getElementById('m-overall').textContent  = pct(c.score);
+    document.getElementById('m-semantic').textContent = pct(c.semantic_score);
+    document.getElementById('m-skill').textContent    = pct(c.skill_score);
+    document.getElementById('m-career').textContent   = pct(c.career_score);
 
-            submitBtn.setAttribute('disabled', 'true');
-            progressCard.style.display = 'block';
-            progressBar.style.width = '5%';
-            consoleLog.innerText = 'Uploading candidate file...';
+    // score card bars
+    ['overall','semantic','skill','career'].forEach(k => {
+        const el = document.getElementById(`m-${k}-bar`);
+        const val = k === 'overall' ? c.score : c[`${k}_score`];
+        el.style.width = (val * 100).toFixed(1) + '%';
+        el.style.height = '4px';
+        el.style.borderRadius = '4px';
+    });
 
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    consoleLog.innerText = `Error: ${data.error}`;
-                    statusBadge.innerText = 'Failed';
-                    statusBadge.className = 'status-badge failed';
-                    return;
-                }
-                const taskId = data.task_id;
-                consoleLog.innerText = 'Upload complete. Starting background pipeline...\n';
-                startPolling(taskId);
-            })
-            .catch(err => {
-                consoleLog.innerText = `Upload failed: ${err}`;
-                statusBadge.innerText = 'Failed';
-                statusBadge.className = 'status-badge failed';
-            });
+    // breakdown bars (animate on open)
+    setTimeout(() => {
+        setBar('semantic', c.semantic_score);
+        setBar('skill',    c.skill_score);
+        setBar('career',   c.career_score);
+        const multNorm = Math.min((c.multiplier || 1) / 1.5, 1);
+        setBar('mult', multNorm, `${(c.multiplier||1).toFixed(3)}×`);
+    }, 80);
+
+    // synergy
+    const synergyEl = document.getElementById('m-synergy');
+    synergyEl.innerHTML = '';
+    const pairs = c.synergy_pairs || [];
+    if (pairs.length === 0) {
+        synergyEl.innerHTML = '<span class="synergy-empty">No synergy pairs detected.</span>';
+    } else {
+        pairs.forEach(p => {
+            const d = document.createElement('div');
+            d.className = 'synergy-pill';
+            d.innerHTML = `${esc(p.skills[0])} <span class="synergy-plus">+</span> ${esc(p.skills[1])} <span class="synergy-weight">${p.weight}</span>`;
+            synergyEl.appendChild(d);
         });
+    }
 
-        function startPolling(taskId) {
-            pollInterval = setInterval(() => {
-                fetch(`/status/${taskId}`)
-                .then(res => res.json())
-                .then(data => {
-                    // Update log text
-                    consoleLog.innerText = data.logs.join('\n');
-                    consoleLog.scrollTop = consoleLog.scrollHeight;
+    // skills
+    const skillsEl = document.getElementById('m-skills');
+    skillsEl.innerHTML = '';
+    (c.skills || []).forEach(s => {
+        const d = document.createElement('div');
+        d.className = 'skill-chip';
+        const dotClass = `prof-${s.proficiency || 'beginner'}`;
+        d.innerHTML = `<div class="prof-dot ${dotClass}"></div>${esc(s.name)} <span style="color:var(--text-muted);font-size:10px">${s.duration_months ? s.duration_months+'m' : ''}</span>`;
+        skillsEl.appendChild(d);
+    });
 
-                    // Compute generic progress based on stages in logs
-                    let progress = 10;
-                    const logStr = data.logs.join(' ');
-                    if (logStr.includes('[1/6]')) progress = 20;
-                    if (logStr.includes('[2/6]')) progress = 35;
-                    if (logStr.includes('[3/6]')) progress = 50;
-                    if (logStr.includes('[4/6]')) progress = 65;
-                    if (logStr.includes('[5/6]')) progress = 80;
-                    if (logStr.includes('[6/6]')) progress = 95;
-                    
-                    progressBar.style.width = `${progress}%`;
+    // reasoning
+    document.getElementById('m-reasoning').textContent = c.reasoning || '—';
 
-                    if (data.status === 'completed') {
-                        clearInterval(pollInterval);
-                        progressBar.style.width = '100%';
-                        statusBadge.innerText = 'Completed';
-                        statusBadge.className = 'status-badge completed';
-                        
-                        dlCsv.href = `/download/${data.csv_filename}`;
-                        dlXlsx.href = `/download/${data.xlsx_filename}`;
-                        downloadActions.style.display = 'flex';
-                    } else if (data.status === 'failed') {
-                        clearInterval(pollInterval);
-                        statusBadge.innerText = 'Failed';
-                        statusBadge.className = 'status-badge failed';
-                    }
-                })
-                .catch(err => {
-                    console.log('Polling status failed:', err);
-                });
-            }, 2000);
-        }
-    </script>
+    document.getElementById('modal-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function setBar(key, val, overrideLabel) {
+    const pct = (Math.min(Math.max(val, 0), 1) * 100).toFixed(1);
+    document.getElementById(`bf-${key}`).style.width = pct + '%';
+    document.getElementById(`b-${key}`).textContent  = overrideLabel || (pct + '%');
+}
+
+function closeModal(event) {
+    if (event && event.target !== document.getElementById('modal-overlay')) return;
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
 </body>
 </html>

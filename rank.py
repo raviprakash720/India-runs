@@ -635,8 +635,14 @@ def main(candidates_path=None, output_csv_path=None, output_xlsx_path=None, prog
 
     # Assign ranks and generate reasoning
     rows = []
+    rows_detail = []  # enriched data for the web API
     for rank, item in enumerate(top100, start=1):
         cand = item["cand"]
+        profile  = cand.get("profile", {}) or {}
+        signals  = cand.get("redrob_signals", {}) or {}
+        skills   = cand.get("skills", []) or []
+        career   = cand.get("career_history", []) or []
+
         reasoning = generate_reasoning(
             cand,
             item["final_score"],
@@ -651,12 +657,64 @@ def main(candidates_path=None, output_csv_path=None, output_xlsx_path=None, prog
             "reasoning":    reasoning,
         })
 
+        # Compute co-occurrence synergy pairs triggered
+        triggered_pairs = []
+        try:
+            from skill_cooccurrence import CO_OCCURRENCE_PAIRS
+            skill_names_lower = {(s.get("name") or "").lower() for s in skills}
+            for pair, weight in CO_OCCURRENCE_PAIRS.items():
+                pair_list = list(pair)
+                if pair_list[0] in skill_names_lower and pair_list[1] in skill_names_lower:
+                    triggered_pairs.append({
+                        "skills": pair_list,
+                        "weight": round(weight, 2)
+                    })
+            triggered_pairs.sort(key=lambda x: -x["weight"])
+        except Exception:
+            pass
+
+        rows_detail.append({
+            "candidate_id":   item["candidate_id"],
+            "rank":           rank,
+            "score":          round(item["final_score"], 6),
+            "semantic_score": round(item["semantic_score"], 4),
+            "skill_score":    round(item["skill_score"], 4),
+            "career_score":   round(item["career_score"], 4),
+            "multiplier":     round(item["multiplier"], 4),
+            "reasoning":      reasoning,
+            # Profile fields for search/filter
+            "name":           profile.get("name") or "",
+            "current_title":  profile.get("current_title") or profile.get("headline") or "",
+            "years_of_experience": profile.get("years_of_experience") or 0,
+            "open_to_work":   bool(signals.get("open_to_work_flag") or profile.get("open_to_work")),
+            "notice_period_days": int(signals.get("notice_period_days") or profile.get("notice_period_days") or 0),
+            "skills": [
+                {
+                    "name": s.get("name", ""),
+                    "proficiency": s.get("proficiency", ""),
+                    "duration_months": s.get("duration_months", 0),
+                }
+                for s in skills[:15]  # top 15 skills
+            ],
+            "last_company": (
+                sorted([j for j in career if j.get("start_date")], key=lambda j: j.get("start_date",""), reverse=True)[0].get("company","")
+                if career else ""
+            ),
+            "synergy_pairs": triggered_pairs[:8],  # top 8 synergy pairs
+        })
+
     # ── 6. Write submission CSV ──
     report(f"\n[6/6] Writing {current_output_csv}...")
     with open(current_output_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["candidate_id", "rank", "score", "reasoning"])
         writer.writeheader()
         writer.writerows(rows)
+
+    # ── 6b. Write enriched JSON for the web dashboard ──
+    detail_json_path = current_output_csv.replace(".csv", "_detail.json")
+    with open(detail_json_path, "w", encoding="utf-8") as f:
+        json.dump(rows_detail, f, ensure_ascii=False)
+    report(f"  Detail JSON written: {detail_json_path}")
 
     # ── 7. Write formatted submission XLSX ──
     try:

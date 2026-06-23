@@ -6,8 +6,9 @@ from flask import Flask, request, jsonify, render_template, send_from_directory
 from rank import main as run_ranking
 
 app = Flask(__name__)
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads")
-OUTPUT_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+OUTPUT_FOLDER = os.path.join(BASE_DIR, "outputs")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
@@ -17,13 +18,13 @@ app.config["OUTPUT_FOLDER"] = OUTPUT_FOLDER
 # Global state to keep track of tasks
 tasks = {}
 
+
 def process_candidates_task(task_id, filepath, csv_out, xlsx_out):
     tasks[task_id]["status"] = "processing"
-    
+
     def log_progress(msg):
         tasks[task_id]["logs"].append(msg)
-        # Keep only the last 50 log messages
-        if len(tasks[task_id]["logs"]) > 50:
+        if len(tasks[task_id]["logs"]) > 80:
             tasks[task_id]["logs"].pop(0)
 
     try:
@@ -31,16 +32,18 @@ def process_candidates_task(task_id, filepath, csv_out, xlsx_out):
             candidates_path=filepath,
             output_csv_path=csv_out,
             output_xlsx_path=xlsx_out,
-            progress_callback=log_progress
+            progress_callback=log_progress,
         )
         tasks[task_id]["status"] = "completed"
     except Exception as e:
         tasks[task_id]["status"] = "failed"
         tasks[task_id]["logs"].append(f"ERROR: {str(e)}")
 
+
 @app.route("/")
 def index():
     return render_template("index.html")
+
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -50,7 +53,6 @@ def upload_file():
     if file.filename == "":
         return jsonify({"error": "No selected file"}), 400
 
-    # Ensure it is a valid format (e.g., .jsonl or .txt)
     task_id = str(uuid.uuid4())
     filename = f"{task_id}_candidates.jsonl"
     filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
@@ -63,17 +65,19 @@ def upload_file():
         "status": "queued",
         "logs": ["File uploaded successfully. Initializing pipeline..."],
         "csv_filename": f"{task_id}_submission.csv",
-        "xlsx_filename": f"{task_id}_submission.xlsx"
+        "xlsx_filename": f"{task_id}_submission.xlsx",
+        "detail_filename": f"{task_id}_submission_detail.json",
     }
 
-    # Start the ranking pipeline in a background thread
     t = threading.Thread(
         target=process_candidates_task,
-        args=(task_id, filepath, csv_out, xlsx_out)
+        args=(task_id, filepath, csv_out, xlsx_out),
     )
+    t.daemon = True
     t.start()
 
     return jsonify({"task_id": task_id})
+
 
 @app.route("/status/<task_id>", methods=["GET"])
 def get_status(task_id):
@@ -81,9 +85,32 @@ def get_status(task_id):
         return jsonify({"error": "Task not found"}), 404
     return jsonify(tasks[task_id])
 
+
+@app.route("/results/<task_id>", methods=["GET"])
+def get_results(task_id):
+    """Return the enriched top-100 candidate data for the interactive table."""
+    if task_id not in tasks:
+        return jsonify({"error": "Task not found"}), 404
+    if tasks[task_id]["status"] != "completed":
+        return jsonify({"error": "Task not completed yet"}), 202
+
+    detail_path = os.path.join(
+        app.config["OUTPUT_FOLDER"], tasks[task_id]["detail_filename"]
+    )
+    if not os.path.exists(detail_path):
+        return jsonify({"error": "Results file not found"}), 404
+
+    with open(detail_path, encoding="utf-8") as f:
+        data = json.load(f)
+    return jsonify(data)
+
+
 @app.route("/download/<filename>", methods=["GET"])
 def download_file(filename):
-    return send_from_directory(app.config["OUTPUT_FOLDER"], filename, as_attachment=True)
+    return send_from_directory(
+        app.config["OUTPUT_FOLDER"], filename, as_attachment=True
+    )
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
