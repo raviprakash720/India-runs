@@ -447,20 +447,32 @@ def cosine_sim_matrix(embeddings, jd_emb):
 # ──────────────────────────────────────────────
 # MAIN PIPELINE
 # ──────────────────────────────────────────────
-def main():
+def main(candidates_path=None, output_csv_path=None, output_xlsx_path=None, progress_callback=None):
     start_time = time.time()
 
-    print("=" * 60)
-    print("Redrob Intelligent Candidate Ranker")
-    print("=" * 60)
+    current_candidates_file = candidates_path or CANDIDATES_FILE
+    current_output_csv = output_csv_path or OUTPUT_CSV
+    current_output_xlsx = output_xlsx_path or current_output_csv.replace(".csv", ".xlsx")
+
+    def report(msg):
+        print(msg)
+        if progress_callback:
+            try:
+                progress_callback(msg)
+            except Exception:
+                pass
+
+    report("=" * 60)
+    report("Redrob Intelligent Candidate Ranker")
+    report("=" * 60)
 
     # ── 1. Load honeypot IDs ──
-    print("\n[1/6] Loading honeypot IDs...")
+    report("\n[1/6] Loading honeypot IDs...")
     honeypot_set = load_honeypot_ids()
-    print(f"  Loaded {len(honeypot_set)} pre-flagged honeypot IDs.")
+    report(f"  Loaded {len(honeypot_set)} pre-flagged honeypot IDs.")
 
     # ── 2. Load embeddings ──
-    print("\n[2/6] Loading pre-computed embeddings...")
+    report("\n[2/6] Loading pre-computed embeddings...")
     emb_path  = os.path.join(CACHE_DIR, "candidate_embeddings.npy")
     ids_path  = os.path.join(CACHE_DIR, "candidate_ids.json")
     jd_path   = os.path.join(CACHE_DIR, "jd_embedding.npy")
@@ -488,30 +500,30 @@ def main():
         smin, smax = semantic_scores.min(), semantic_scores.max()
         if smax > smin:
             semantic_scores = (semantic_scores - smin) / (smax - smin)
-        print(f"  Loaded NEURAL embeddings for {len(embed_id_list):,} candidates (best quality).")
+        report(f"  Loaded NEURAL embeddings for {len(embed_id_list):,} candidates (best quality).")
     elif use_1d_scores:
         import numpy as np
         with open(ids_path, encoding="utf-8") as f:
             embed_id_list = json.load(f)
         semantic_scores = np.load(scores_1d_path)
         embed_id_to_idx = {cid: i for i, cid in enumerate(embed_id_list)}
-        print(f"  Loaded keyword semantic scores for {len(embed_id_list):,} candidates.")
+        report(f"  Loaded keyword semantic scores for {len(embed_id_list):,} candidates.")
     else:
-        print("  WARNING: No semantic cache found. Semantic score will be 0.5 (neutral).")
-        print("  Run precompute.py first for best results.")
+        report("  WARNING: No semantic cache found. Semantic score will be 0.5 (neutral).")
+        report("  Run precompute.py first for best results.")
         embed_id_to_idx = {}
         semantic_scores = None
 
     # ── 3. Load candidates ──
-    print("\n[3/6] Loading candidate profiles...")
+    report("\n[3/6] Loading candidate profiles...")
     candidates = []
-    with open(CANDIDATES_FILE, "r", encoding="utf-8") as f:
+    with open(current_candidates_file, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
             candidates.append(json.loads(line))
-    print(f"  Loaded {len(candidates)} candidate profiles.")
+    report(f"  Loaded {len(candidates)} candidate profiles.")
 
     # ── 4. Score all candidates ──
     print("\n[4/6] Scoring candidates...")
@@ -640,8 +652,8 @@ def main():
         })
 
     # ── 6. Write submission CSV ──
-    print(f"\n[6/6] Writing {OUTPUT_CSV}...")
-    with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as f:
+    report(f"\n[6/6] Writing {current_output_csv}...")
+    with open(current_output_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["candidate_id", "rank", "score", "reasoning"])
         writer.writeheader()
         writer.writerows(rows)
@@ -649,8 +661,7 @@ def main():
     # ── 7. Write formatted submission XLSX ──
     try:
         from export_xlsx import export_to_xlsx
-        xlsx_path = OUTPUT_CSV.replace(".csv", ".xlsx")
-        print(f"  Writing formatted spreadsheet to {xlsx_path}...")
+        report(f"  Writing formatted spreadsheet to {current_output_xlsx}...")
         xlsx_rows = []
         for rank, item in enumerate(top100, start=1):
             cand = item["cand"]
@@ -676,17 +687,17 @@ def main():
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "total_candidates": len(candidates)
         }
-        export_to_xlsx(xlsx_rows, xlsx_path, metadata=metadata)
-        print(f"  XLSX Export successful: {xlsx_path}")
+        export_to_xlsx(xlsx_rows, current_output_xlsx, metadata=metadata)
+        report(f"  XLSX Export successful: {current_output_xlsx}")
     except Exception as e:
-        print(f"  Warning: XLSX export skipped or failed: {e}")
+        report(f"  Warning: XLSX export skipped or failed: {e}")
 
     elapsed = time.time() - start_time
-    print(f"\n{'=' * 60}")
-    print(f"Done! Elapsed time: {elapsed:.1f}s")
-    print(f"Output: {OUTPUT_CSV}")
-    print(f"Top candidate: {rows[0]['candidate_id']} (score={rows[0]['score']})")
-    print(f"{'=' * 60}")
+    report(f"\n{'=' * 60}")
+    report(f"Done! Elapsed time: {elapsed:.1f}s")
+    report(f"Output: {current_output_csv}")
+    report(f"Top candidate: {rows[0]['candidate_id']} (score={rows[0]['score']})")
+    report(f"{'=' * 60}")
 
     # Quick sanity checks
     print("\n[Sanity Checks]")

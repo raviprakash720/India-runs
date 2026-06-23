@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redrob Intelligent Ranker | Dashboard</title>
+    <!-- Outfit Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0A0F1D;
+            --bg-secondary: #141C31;
+            --accent-blue: #2A66FF;
+            --accent-green: #00E676;
+            --text-main: #FFFFFF;
+            --text-muted: #8F9CAE;
+            --border-color: #202D4A;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(20, 28, 49, 0.5);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-dot {
+            width: 14px;
+            height: 14px;
+            background-color: var(--accent-blue);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--accent-blue);
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-text span {
+            color: var(--accent-blue);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 60px auto;
+            width: 100%;
+            padding: 0 20px;
+            flex-grow: 1;
+        }
+
+        .hero-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero-section h1 {
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #FFF, #8F9CAE);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section p {
+            color: var(--text-muted);
+            font-size: 16px;
+            max-width: 550px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        .upload-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            transition: border-color 0.3s ease;
+        }
+
+        .upload-card.dragover {
+            border-color: var(--accent-blue);
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 40px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: rgba(10, 15, 29, 0.3);
+        }
+
+        .drop-zone:hover {
+            border-color: var(--accent-blue);
+            background-color: rgba(42, 102, 255, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: inline-block;
+        }
+
+        .drop-zone-text {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .drop-zone-subtext {
+            font-size: 12px;
+            color: #58667E;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background-color: var(--accent-blue);
+            color: var(--text-main);
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(42, 102, 255, 0.3);
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(42, 102, 255, 0.5);
+        }
+
+        .btn:disabled {
+            background-color: #202D4A;
+            color: var(--text-muted);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Progress Card */
+        .progress-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            display: none;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .progress-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            background-color: rgba(42, 102, 255, 0.15);
+            color: var(--accent-blue);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.completed {
+            background-color: rgba(0, 230, 118, 0.15);
+            color: var(--accent-green);
+        }
+
+        .status-badge.failed {
+            background-color: rgba(244, 67, 54, 0.15);
+            color: #F44336;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 10px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+            border-radius: 10px;
+            transition: width 0.4s ease;
+        }
+
+        .console-log {
+            background-color: #0A0F1D;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            color: #00E676;
+            max-height: 250px;
+            overflow-y: auto;
+            text-align: left;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .download-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn-download {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            box-shadow: none;
+        }
+
+        .btn-download:hover {
+            border-color: var(--accent-blue);
+            background-color: rgba(42, 102, 255, 0.05);
+        }
+
+        .btn-download.xlsx-btn {
+            border-color: var(--accent-green);
+        }
+
+        .btn-download.xlsx-btn:hover {
+            background-color: rgba(0, 230, 118, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <div class="logo-dot"></div>
+            <div class="logo-text">REDROB <span>RANKER</span></div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="hero-section">
+            <h1>Candidate Evaluation Hub</h1>
+            <p>Upload your candidates.jsonl file to run Cross-Encoder semantic reranking, Skill Co-Occurrence scoring, and LightGBM ensemble pipeline instantly.</p>
+        </div>
+
+        <div class="upload-card" id="upload-card">
+            <div class="drop-zone" id="drop-zone">
+                <span class="upload-icon">📁</span>
+                <div class="drop-zone-text">Drag and drop candidates file here or click to browse</div>
+                <div class="drop-zone-subtext">Accepted formats: JSONL (.jsonl, .txt)</div>
+                <input type="file" id="file-input" class="file-input" accept=".jsonl,.txt">
+            </div>
+            <button class="btn" id="submit-btn" disabled>Rank Candidates</button>
+        </div>
+
+        <div class="progress-card" id="progress-card">
+            <div class="progress-header">
+                <div class="progress-title">Pipeline Status</div>
+                <div class="status-badge" id="status-badge">Processing</div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="console-log" id="console-log">Initializing evaluation...</div>
+
+            <div class="download-actions" id="download-actions" style="display: none;">
+                <a href="#" id="dl-csv" class="btn btn-download">📊 Download CSV</a>
+                <a href="#" id="dl-xlsx" class="btn btn-download xlsx-btn">📈 Download Formatted Excel (XLSX)</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const uploadCard = document.getElementById('upload-card');
+        const progressCard = document.getElementById('progress-card');
+        const statusBadge = document.getElementById('status-badge');
+        const progressBar = document.getElementById('progress-bar');
+        const consoleLog = document.getElementById('console-log');
+        const downloadActions = document.getElementById('download-actions');
+        const dlCsv = document.getElementById('dl-csv');
+        const dlXlsx = document.getElementById('dl-xlsx');
+
+        let selectedFile = null;
+        let pollInterval = null;
+
+        // Drag & Drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadCard.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            uploadCard.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadCard.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        dropZone.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                handleFile(fileInput.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            selectedFile = file;
+            dropZone.querySelector('.drop-zone-text').innerText = `Selected: ${file.name}`;
+            submitBtn.removeAttribute('disabled');
+        }
+
+        submitBtn.addEventListener('click', () => {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            submitBtn.setAttribute('disabled', 'true');
+            progressCard.style.display = 'block';
+            progressBar.style.width = '5%';
+            consoleLog.innerText = 'Uploading candidate file...';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    consoleLog.innerText = `Error: ${data.error}`;
+                    statusBadge.innerText = 'Failed';
+                    statusBadge.className = 'status-badge failed';
+                    return;
+                }
+                const taskId = data.task_id;
+                consoleLog.innerText = 'Upload complete. Starting background pipeline...\n';
+                startPolling(taskId);
+            })
+            .catch(err => {
+                consoleLog.innerText = `Upload failed: ${err}`;
+                statusBadge.innerText = 'Failed';
+                statusBadge.className = 'status-badge failed';
+            });
+        });
+
+        function startPolling(taskId) {
+            pollInterval = setInterval(() => {
+                fetch(`/status/${taskId}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Update log text
+                    consoleLog.innerText = data.logs.join('\n');
+                    consoleLog.scrollTop = consoleLog.scrollHeight;
+
+                    // Compute generic progress based on stages in logs
+                    let progress = 10;
+                    const logStr = data.logs.join(' ');
+                    if (logStr.includes('[1/6]')) progress = 20;
+                    if (logStr.includes('[2/6]')) progress = 35;
+                    if (logStr.includes('[3/6]')) progress = 50;
+                    if (logStr.includes('[4/6]')) progress = 65;
+                    if (logStr.includes('[5/6]')) progress = 80;
+                    if (logStr.includes('[6/6]')) progress = 95;
+                    
+                    progressBar.style.width = `${progress}%`;
+
+                    if (data.status === 'completed') {
+                        clearInterval(pollInterval);
+                        progressBar.style.width = '100%';
+                        statusBadge.innerText = 'Completed';
+                        statusBadge.className = 'status-badge completed';
+                        
+                        dlCsv.href = `/download/${data.csv_filename}`;
+                        dlXlsx.href = `/download/${data.xlsx_filename}`;
+                        downloadActions.style.display = 'flex';
+                    } else if (data.status === 'failed') {
+                        clearInterval(pollInterval);
+                        statusBadge.innerText = 'Failed';
+                        statusBadge.className = 'status-badge failed';
+                    }
+                })
+                .catch(err => {
+                    console.log('Polling status failed:', err);
+                });
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
