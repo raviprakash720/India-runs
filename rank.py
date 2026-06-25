@@ -518,16 +518,20 @@ def main(candidates_path=None, output_csv_path=None, output_xlsx_path=None, prog
     report("\n[3/6] Loading candidate profiles...")
     candidates = []
     with open(current_candidates_file, "r", encoding="utf-8") as f:
-        content = f.read().strip()
-        if content.startswith("[") or content.startswith("{"):
+        # Check first character to see if it's a JSON array
+        first_char = f.read(1)
+        f.seek(0)
+        
+        if first_char in ("[", "{"):
             try:
-                parsed = json.loads(content)
+                # Try loading the entire file if it's a standard JSON array/object
+                parsed = json.load(f)
                 if isinstance(parsed, list):
                     candidates = parsed
                 else:
                     candidates = [parsed]
-            except Exception as json_err:
-                # If reading the whole file as standard JSON fails, fallback to line-by-line reading
+            except Exception:
+                # Fallback to line-by-line if it's actually JSONL but starts with {
                 f.seek(0)
                 for line in f:
                     line = line.strip()
@@ -538,8 +542,7 @@ def main(candidates_path=None, output_csv_path=None, output_xlsx_path=None, prog
                     except Exception:
                         pass
         else:
-            # Try parsing line by line
-            f.seek(0)
+            # Parse line by line
             for line in f:
                 line = line.strip()
                 if not line:
