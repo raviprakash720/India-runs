@@ -9,20 +9,21 @@
 
 The submission includes a full Flask-based web application providing a premium dark-mode interface for uploading candidate datasets, tracking execution progress in real-time, filtering results, and exploring matching profiles.
 
-### 📸 Dashboard Screenshots & Deliverables
+### 📸 Dashboard Screenshots & System Interface
 
-> [!NOTE]
-> To display screenshots in this README for the hackathon judges, save your screenshots inside a directory named `docs/` in your repository as `dashboard.png`, `modal.png`, and `excel.png`.
+#### 1. File Upload & Pipeline Initialization
+Drag-and-drop interface supporting large candidate `.jsonl` and `.json` datasets with real-time status and console logging.
+![File Upload Interface](docs/upload.png)
 
-#### 1. Interactive Matching & Scoring Dashboard
+#### 2. Interactive Matching & Scoring Dashboard
 Detailed data table showing top ranked candidates, real-time search, filters for "Open to Work", "Immediate Joiners", and Experience slider.
 ![Dashboard Interface](docs/dashboard.png)
 
-#### 2. Deep-Dive Candidate Profile Modal
+#### 3. Deep-Dive Candidate Profile Modal
 Clicking on any candidate displays their matching scores (Semantic, Skill, Career) and visualizes skill synergy using interactive progress indicators.
 ![Candidate Profile Modal](docs/modal.png)
 
-#### 3. Polished Excel Submission Export
+#### 4. Polished Excel Submission Export
 The pipeline automatically writes a formatted `.xlsx` workbook featuring a multi-color gradient scale on matching scores, custom header branding, and a detailed run summary sheet.
 ![Excel Spreadsheet Output](docs/excel.png)
 
