@@ -617,19 +617,20 @@ def main(candidates_path=None, output_csv_path=None, output_xlsx_path=None, prog
             "hybrid search, Python, evaluation frameworks NDCG MRR MAP, LLM fine-tuning, "
             "RAG, information retrieval, ranking systems at product companies."
         )
-        print("  Generating candidate texts for top 5,000 candidates...")
-        # Only build texts for candidates in the top 5000 to keep it extremely fast
-        top_5k_ids = {item["candidate_id"] for item in scored[:5000]}
+        print("  Generating candidate texts for top 200 candidates...")
+        # Only build texts for candidates in the top 200 to keep it extremely fast and memory-safe
+        top_k_limit = 200
+        top_k_ids = {item["candidate_id"] for item in scored[:top_k_limit]}
         candidate_texts = {
             item["candidate_id"]: build_candidate_text(item["cand"])
             for item in scored
-            if item["candidate_id"] in top_5k_ids
+            if item["candidate_id"] in top_k_ids
         }
         print("  Applying Cross-Encoder reranking...")
-        scored = rerank_candidates(scored, candidate_texts, jd_text, top_k=5000)
+        scored = rerank_candidates(scored, candidate_texts, jd_text, top_k=top_k_limit)
 
-        # Recompute final_score for top 5k using refined semantic scores
-        for item in scored[:5000]:
+        # Recompute final_score for top_k using refined semantic scores
+        for item in scored[:top_k_limit]:
             composite = (
                 W_SEMANTIC * item["semantic_score"] +
                 W_SKILL    * item["skill_score"] +
