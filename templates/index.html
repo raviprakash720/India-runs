@@ -785,11 +785,25 @@ submitBtn.addEventListener('click', () => {
 });
 
 function pollStatus() {
+    let errorCount = 0;
     pollTimer = setInterval(() => {
         fetch(`/status/${currentTaskId}`)
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) {
+                errorCount++;
+                if (errorCount >= 5) {
+                    clearInterval(pollTimer);
+                    setStatus('failed', 0, 'Connection to server lost. The server may have restarted.\nPlease refresh the page and upload again.');
+                }
+                return null;
+            }
+            errorCount = 0;
+            return r.json();
+        })
         .then(d => {
-            const log = d.logs.join('\n');
+            if (!d || d.error) return;
+
+            const log = (d.logs || []).join('\n');
             document.getElementById('console').textContent = log;
             document.getElementById('console').scrollTop = 9999;
 
@@ -817,6 +831,13 @@ function pollStatus() {
                 loadResults();
             } else if (d.status === 'failed') {
                 clearInterval(pollTimer);
+            }
+        })
+        .catch(() => {
+            errorCount++;
+            if (errorCount >= 5) {
+                clearInterval(pollTimer);
+                setStatus('failed', 0, 'Network error. Please refresh and try again.');
             }
         });
     }, 2000);

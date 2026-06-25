@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import threading
+import traceback
 from flask import Flask, request, jsonify, render_template, send_from_directory
 from rank import main as run_ranking
 
@@ -37,7 +38,11 @@ def process_candidates_task(task_id, filepath, csv_out, xlsx_out):
         tasks[task_id]["status"] = "completed"
     except Exception as e:
         tasks[task_id]["status"] = "failed"
+        tb = traceback.format_exc()
         tasks[task_id]["logs"].append(f"ERROR: {str(e)}")
+        tasks[task_id]["logs"].append(tb)
+        print(f"[TASK {task_id}] FAILED: {e}")
+        print(tb)
 
 
 @app.route("/")
@@ -113,4 +118,8 @@ def download_file(filename):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    # use_reloader=False prevents Flask from restarting the server when
+    # output files (CSV/XLSX/JSON) are written during background processing.
+    # Without this, the watchdog kills the ranking thread mid-run and wipes
+    # the in-memory tasks dict, causing the frontend to poll a dead task ID.
+    app.run(debug=True, use_reloader=False, host="0.0.0.0", port=5000)
