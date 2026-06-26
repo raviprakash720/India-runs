@@ -2,6 +2,8 @@
 
 > **Redrob Data & AI Challenge Submission**  
 > An advanced, production-grade candidate matching and ranking pipeline powered by custom semantic embeddings, logical fraud detection, cross-encoder neural reranking, LightGBM non-linear correction, and a premium dark-mode web interface.
+> 
+> 🌐 **Live Web Application**: [redrob-candidate-ranker.onrender.com](https://redrob-candidate-ranker.onrender.com/)
 
 ---
 
