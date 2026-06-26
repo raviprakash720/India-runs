@@ -20,16 +20,19 @@ Usage:
 import numpy as np
 from typing import List, Dict, Optional, Tuple
 
-# ──────────────────────────────────────────────
-# CROSS-ENCODER MODEL (optional dependency)
-# ──────────────────────────────────────────────
+import os
+
 _CROSS_ENCODER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
-try:
-    from sentence_transformers import CrossEncoder as _CrossEncoder
-    _HAS_CROSS_ENCODER = True
-except ImportError:
+# Render free tier has only 512MB RAM, importing PyTorch/SentenceTransformers causes OOM.
+if os.environ.get("RENDER") == "true":
     _HAS_CROSS_ENCODER = False
+else:
+    try:
+        from sentence_transformers import CrossEncoder as _CrossEncoder
+        _HAS_CROSS_ENCODER = True
+    except ImportError:
+        _HAS_CROSS_ENCODER = False
 
 _model_cache = None
 

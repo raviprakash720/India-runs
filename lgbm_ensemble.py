@@ -28,9 +28,15 @@ import math
 # ──────────────────────────────────────────────
 # OPTIONAL DEPENDENCY — graceful fallback
 # ──────────────────────────────────────────────
+import os
+
 try:
-    import lightgbm as lgb
-    _HAS_LGBM = True
+    if os.environ.get("RENDER") == "true":
+        lgb = None
+        _HAS_LGBM = False
+    else:
+        import lightgbm as lgb
+        _HAS_LGBM = True
 except ImportError:
     lgb = None
     _HAS_LGBM = False
